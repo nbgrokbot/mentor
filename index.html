@@ -74,6 +74,8 @@
     padding:10px 14px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%}
   .toast.show{opacity:.92}
   footer{color:var(--muted);font-size:12px;text-align:center;margin-top:18px}
+  .licao{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 18px;margin:0 0 18px;font-size:17px;line-height:1.6}
+  .licao h2{font-size:21px;line-height:1.3;margin:4px 0 12px}
 </style>
 </head>
 <body>
@@ -81,6 +83,7 @@
   <header><h1>NBbot mentor</h1><div class="date" id="date"></div></header>
   <div id="who" class="empty" style="display:none;margin-bottom:14px"></div>
   <div class="score" id="score"></div>
+  <div id="licao"></div>
   <div id="cards"></div>
   <details id="arch"><summary>Dias anteriores</summary><div class="days" id="days"></div></details>
   <footer>Cartões de mentoria executiva · Regional Manager → VP Regional · IA para executivos · <span id="quem"></span> · <a href="#" id="trocar" style="color:inherit">trocar pessoa</a><a href="#" id="idioma" style="display:none"></a></footer>
@@ -257,6 +260,20 @@ function iniciar(){
     box.appendChild(e);
   } else DATA.cards.forEach(function(c){ box.appendChild(card(c)); });
   renderScore();
+  carregarLicao(DATA.data || DATA.hoje);
+  function carregarLicao(d){
+    if (!d) return;
+    fetch('licoes/' + d + '.json', {cache:'no-cache'}).then(function(r){ if (!r.ok) throw 0; return r.json(); }).then(function(l){
+      if (!l || !l.doc_url || !/^https:\/\/docs\.google\.com\//.test(l.doc_url)) return;
+      var c = el('article','licao'), top = el('div','top');
+      top.appendChild(el('span','chip','📘 Lição do dia · ' + l.n)); c.appendChild(top);
+      c.appendChild(el('h2', null, l.titulo));
+      var a = el('a','btn','Abrir lição'); a.href = l.doc_url; a.target = '_blank'; a.rel = 'noopener';
+      a.style.textAlign = 'center'; a.style.textDecoration = 'none'; c.appendChild(a);
+      c.appendChild(el('p','hint','Abre no Google Docs (conta do curso)'));
+      document.getElementById('licao').appendChild(c);
+    }).catch(function(){});
+  }
 
   var days = document.getElementById('days');
   if (DATA.data !== DATA.hoje){ var h = el('a', null); h.href = DATA.baseUrl || '?'; h.appendChild(el('span', null, T('back'))); h.appendChild(el('span', null, fmt(DATA.hoje))); days.appendChild(h); }
